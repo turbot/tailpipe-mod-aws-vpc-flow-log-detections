@@ -5,6 +5,7 @@ mod "aws_vpc_flow_log_detections" {
   documentation = file("./README.md")
   icon          = "/images/mods/turbot/aws-vpc-flow-log-detections.svg"
   categories    = ["aws", "security", "compliance", "logging"]
+  database      = var.database
 
   opengraph {
     title       = "AWS VPC Flow Log Detections Mod for Powerpipe"
