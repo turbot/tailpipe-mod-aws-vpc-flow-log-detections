@@ -1,5 +1,5 @@
 dashboard "vpc_flow_log_traffic_overview" {
-  title         = "VPC Flow Log Traffic Overview Dashboard"
+  title         = "VPC Flow Log Overview Dashboard"
   documentation = file("./dashboards/docs/vpc_flow_log_traffic_overview.md")
 
   tags = {
@@ -15,7 +15,7 @@ dashboard "vpc_flow_log_traffic_overview" {
     }
 
     card {
-      query = query.vpc_flow_log_total_traffic_volume
+      query = query.vpc_flow_log_total_volume_in_bytes
       width = 2
     }
 
@@ -27,8 +27,8 @@ dashboard "vpc_flow_log_traffic_overview" {
 
   container {
     chart {
-      title = "Accepted vs. Rejected Traffic Volume Over Time"
-      query = query.vpc_flow_log_accepted_vs_rejected_over_time
+      title = "Accepted vs. Rejected"
+      query = query.vpc_flow_log_accepted_vs_rejected
       type  = "line"
       width = 6
 
@@ -43,7 +43,7 @@ dashboard "vpc_flow_log_traffic_overview" {
       axes {
         x {
           title {
-            value = "Time (Hourly)"
+            value = "Time (Daily)"
           }
           labels {
             display = "auto"
@@ -51,7 +51,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Bytes"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -61,8 +61,8 @@ dashboard "vpc_flow_log_traffic_overview" {
     }
 
     chart {
-      title = "Ingress vs. Egress Traffic Volume Over Time"
-      query = query.vpc_flow_log_ingress_vs_egress_over_time
+      title = "Ingress vs. Egress"
+      query = query.vpc_flow_log_ingress_vs_egress
       type  = "line"
       width = 6
 
@@ -77,7 +77,7 @@ dashboard "vpc_flow_log_traffic_overview" {
       axes {
         x {
           title {
-            value = "Time (Hourly)"
+            value = "Time (Daily)"
           }
           labels {
             display = "auto"
@@ -85,7 +85,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Bytes"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -100,7 +100,7 @@ dashboard "vpc_flow_log_traffic_overview" {
       type  = "column"
       width = 6
 
-      series "Total Bytes" {
+      series "Connection Count" {
         color = "purple"
       }
 
@@ -115,7 +115,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Bytes"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -125,7 +125,7 @@ dashboard "vpc_flow_log_traffic_overview" {
     }
 
     chart {
-      title = "Traffic Distribution by Region"
+      title = "Connections by Region"
       query = query.vpc_flow_log_traffic_by_region
       type  = "column"
       width = 6
@@ -141,7 +141,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Bytes"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -149,21 +149,20 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
       }
     }
-
     chart {
       title = "HTTP Requests (Port 80 Traffic)"
       query = query.vpc_flow_log_http_requests
       type  = "line"
       width = 6
 
-      series "request_count" {
+      series "Connection Count" {
         color = "orange"
       }
 
       axes {
         x {
           title {
-            value = "Time (Hourly)"
+            value = "Time (Daily)"
           }
           labels {
             display = "auto"
@@ -171,7 +170,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Count"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -186,14 +185,14 @@ dashboard "vpc_flow_log_traffic_overview" {
       type  = "line"
       width = 6
 
-      series "request_count" {
+      series "Connection Count" {
         color = "green"
       }
 
       axes {
         x {
           title {
-            value = "Time (Hourly)"
+            value = "Time (Daily)"
           }
           labels {
             display = "auto"
@@ -201,7 +200,7 @@ dashboard "vpc_flow_log_traffic_overview" {
         }
         y {
           title {
-            value = "Count"
+            value = "Connection Count"
           }
           labels {
             display = "auto"
@@ -211,7 +210,7 @@ dashboard "vpc_flow_log_traffic_overview" {
     }
 
     chart {
-      title = "Traffic Distribution by Protocol"
+      title = "Connections by Protocol"
       query = query.vpc_flow_log_traffic_by_protocol
       type  = "pie"
       width = 6
@@ -265,13 +264,13 @@ query "vpc_flow_log_total_logs" {
   }
 }
 
-query "vpc_flow_log_total_traffic_volume" {
-  title       = "Total Traffic in Bytes"
+query "vpc_flow_log_total_volume_in_bytes" {
+  title       = "Total Bytes"
   description = "Sum of all bytes transferred in VPC Flow Logs."
 
   sql = <<-EOQ
     select
-      sum(bytes) as "Total Traffic in Bytes"
+      sum(bytes) as "Total Bytes"
     from
       aws_vpc_flow_log;
   EOQ
@@ -282,12 +281,12 @@ query "vpc_flow_log_total_traffic_volume" {
 }
 
 query "vpc_flow_log_total_packets" {
-  title       = "Total Traffic in Packets"
+  title       = "Total Packets"
   description = "Sum of all packets transferred in VPC Flow Logs."
 
   sql = <<-EOQ
     select
-      sum(packets) as "Total Traffic in Packets"
+      sum(packets) as "Total Packets"
     from
       aws_vpc_flow_log;
   EOQ
@@ -297,33 +296,31 @@ query "vpc_flow_log_total_packets" {
   }
 }
 
-query "vpc_flow_log_accepted_vs_rejected_over_time" {
-  title       = "Accepted vs. Rejected Traffic Over Time"
-  description = "Comparison of accepted and rejected traffic volume over the past 7 days."
+query "vpc_flow_log_accepted_vs_rejected" {
+  title       = "Accepted vs. Rejected"
+  description = "Comparison of accepted and rejected connection counts."
 
   sql = <<-EOQ
     with time_series as (
       select
-        date_trunc('hour', start_time) as hour,
-        sum(bytes) filter (where action = 'ACCEPT') as accepted,
-        sum(bytes) filter (where action = 'REJECT') as rejected
+        date_trunc('day', start_time) as day,
+        count(*) filter (where action = 'ACCEPT') as accepted,
+        count(*) filter (where action = 'REJECT') as rejected
       from
         aws_vpc_flow_log
-      where
-        start_time >= (current_date - interval '7' day)
       group by
-        hour
+        day
       order by
-        hour
+        day
     )
     select
-      hour,
+      day,
       accepted,
       rejected
     from
       time_series
     order by
-      hour
+      day;
   EOQ
 
   tags = {
@@ -332,7 +329,7 @@ query "vpc_flow_log_accepted_vs_rejected_over_time" {
 }
 
 query "vpc_flow_log_top_ips_by_traffic" {
-  title       = "Top 10 IP Addresses by Traffic"
+  title       = "Top 10 IP Addresses"
   description = "List the top 10 source IP addresses generating the most traffic."
 
   sql = <<-EOQ
@@ -349,8 +346,8 @@ query "vpc_flow_log_top_ips_by_traffic" {
     group by
       src_addr
     order by
-      "Total Bytes" desc
-    limit 10
+      "Connection Count" desc
+    limit 10;
   EOQ
 
   tags = {
@@ -365,7 +362,7 @@ query "vpc_flow_log_top_ips_by_rejects" {
   sql = <<-EOQ
     select
       src_addr as "Source IP",
-      count(*) as "Rejected Count",
+      count(*) as "Connection Count",
       sum(bytes) as "Total Bytes Rejected",
       sum(packets) as "Total Packets Rejected",
       max(start_time) as "Last Rejected"
@@ -377,8 +374,8 @@ query "vpc_flow_log_top_ips_by_rejects" {
     group by
       src_addr
     order by
-      "Rejected Count" desc
-    limit 10
+      "Connection Count" desc
+    limit 10;
   EOQ
 
   tags = {
@@ -407,7 +404,7 @@ query "vpc_flow_log_top_packet_transfers" {
       src_addr, dst_addr
     order by
       "Total Packets" desc
-    limit 10
+    limit 10;
   EOQ
 
   tags = {
@@ -422,9 +419,9 @@ query "vpc_flow_log_skipped_records" {
   sql = <<-EOQ
     select
       src_addr as "Source IP",
+      count(*) as "Skip Count",
       dst_addr as "Destination IP",
       log_status as "Log Status",
-      count(*) as "Skip Count",
       max(start_time) as "Last Observed"
     from
       aws_vpc_flow_log
@@ -434,7 +431,7 @@ query "vpc_flow_log_skipped_records" {
       src_addr, dst_addr, log_status
     order by
       "Skip Count" desc
-    limit 10
+    limit 10;
   EOQ
 
   tags = {
@@ -443,32 +440,31 @@ query "vpc_flow_log_skipped_records" {
 }
 
 query "vpc_flow_log_http_requests" {
-  title       = "HTTP Traffic Over Time"
-  description = "Count of HTTP requests (port 80) over the past 7 days."
+  title       = "HTTP Traffic"
+  description = "Count of HTTP requests (port 80)."
 
   sql = <<-EOQ
     with time_series as (
       select
-        date_trunc('hour', start_time) as hour,
+        date_trunc('day', start_time) as day,
         count(*) as request_count
       from
         aws_vpc_flow_log
       where
-        start_time >= (current_date - interval '7' day)
-        and dst_port = 80
+        dst_port = 80
         and action = 'ACCEPT'
       group by
-        hour
+        day
       order by
-        hour
+        day
     )
     select
-      hour,
-      request_count
+      day,
+      request_count as "Connection Count"
     from
       time_series
     order by
-      hour
+      day;
   EOQ
 
   tags = {
@@ -477,32 +473,31 @@ query "vpc_flow_log_http_requests" {
 }
 
 query "vpc_flow_log_https_requests" {
-  title       = "HTTPS Traffic Over Time"
-  description = "Count of HTTPS requests (port 443) over the past 7 days."
+  title       = "HTTPS Traffic"
+  description = "Count of HTTPS requests (port 443)."
 
   sql = <<-EOQ
     with time_series as (
       select
-        date_trunc('hour', start_time) as hour,
+        date_trunc('day', start_time) as day,
         count(*) as request_count
       from
         aws_vpc_flow_log
       where
-        start_time >= (current_date - interval '7' day)
-        and dst_port = 443
+        dst_port = 443
         and action = 'ACCEPT'
       group by
-        hour
+        day
       order by
-        hour
+        day
     )
     select
-      hour,
-      request_count
+      day,
+      request_count as "Connection Count"
     from
       time_series
     order by
-      hour
+      day;
   EOQ
 
   tags = {
@@ -512,7 +507,7 @@ query "vpc_flow_log_https_requests" {
 
 query "vpc_flow_log_traffic_by_protocol" {
   title       = "Traffic by Protocol"
-  description = "Distribution of traffic volume across different protocols."
+  description = "Distribution of connection counts across different protocols."
 
   sql = <<-EOQ
     select
@@ -522,15 +517,20 @@ query "vpc_flow_log_traffic_by_protocol" {
         when protocol = 17 then 'UDP'
         else 'Other'
       end as protocol,
-      sum(bytes) as total_bytes
+      count(*) as "Connection Count"
     from
       aws_vpc_flow_log
     where
       protocol is not null
     group by
-      protocol
+      case
+        when protocol = 1 then 'ICMP'
+        when protocol = 6 then 'TCP'
+        when protocol = 17 then 'UDP'
+        else 'Other'
+      end
     order by
-      total_bytes desc
+      "Connection Count" desc;
   EOQ
 
   tags = {
@@ -540,12 +540,12 @@ query "vpc_flow_log_traffic_by_protocol" {
 
 query "vpc_flow_log_traffic_by_region" {
   title       = "Traffic by Region"
-  description = "Distribution of traffic volume across different AWS regions."
+  description = "Distribution of connection counts across different AWS regions."
 
   sql = <<-EOQ
     select
       region,
-      sum(bytes) as total_bytes
+      count(*) as "Connection Count"
     from
       aws_vpc_flow_log
     where
@@ -553,8 +553,7 @@ query "vpc_flow_log_traffic_by_region" {
     group by
       region
     order by
-      total_bytes desc
-    limit 10
+      "Connection Count" desc;
   EOQ
 
   tags = {
@@ -562,34 +561,33 @@ query "vpc_flow_log_traffic_by_region" {
   }
 }
 
-query "vpc_flow_log_ingress_vs_egress_over_time" {
-  title       = "Ingress vs. Egress Traffic Over Time"
-  description = "Comparison of ingress and egress traffic volume over the past 7 days."
+query "vpc_flow_log_ingress_vs_egress" {
+  title       = "Ingress vs. Egress"
+  description = "Comparison of ingress and egress connection counts."
 
   sql = <<-EOQ
     with time_series as (
       select
-        date_trunc('hour', start_time) as hour,
-        sum(bytes) filter (where flow_direction = 'ingress') as ingress,
-        sum(bytes) filter (where flow_direction = 'egress') as egress
+        date_trunc('day', start_time) as day,
+        count(*) filter (where flow_direction = 'ingress') as ingress,
+        count(*) filter (where flow_direction = 'egress') as egress
       from
         aws_vpc_flow_log
       where
-        start_time >= (current_date - interval '7' day)
-        and flow_direction is not null
+        flow_direction is not null
       group by
-        hour
+        day
       order by
-        hour
+        day
     )
     select
-      hour,
+      day,
       ingress,
       egress
     from
       time_series
     order by
-      hour
+      day;
   EOQ
 
   tags = {
@@ -599,7 +597,7 @@ query "vpc_flow_log_ingress_vs_egress_over_time" {
 
 query "vpc_flow_log_egress_path_analysis" {
   title       = "Egress Traffic Path Analysis"
-  description = "Distribution of egress traffic across different path types."
+  description = "Distribution of egress connections across different path types."
 
   sql = <<-EOQ
     select
@@ -614,7 +612,7 @@ query "vpc_flow_log_egress_path_analysis" {
         when 8 then 'Through Internet Gateway (Nitro)'
         else 'Other/Unknown'
       end as "Path Type",
-      sum(bytes) as "Total Bytes"
+      count(*) as "Connection Count"
     from
       aws_vpc_flow_log
     where
@@ -623,7 +621,7 @@ query "vpc_flow_log_egress_path_analysis" {
     group by
       traffic_path
     order by
-      "Total Bytes" desc
+      "Connection Count" desc;
   EOQ
 
   tags = {
