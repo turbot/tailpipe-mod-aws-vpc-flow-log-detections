@@ -39,6 +39,25 @@ dashboard "vpc_flow_log_traffic_overview" {
       series "rejected" {
         color = "red"
       }
+
+      axes {
+        x {
+          title {
+            value = "Time (Hourly)"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Bytes"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+      }
     }
 
     chart {
@@ -54,6 +73,25 @@ dashboard "vpc_flow_log_traffic_overview" {
       series "egress" {
         color = "orange"
       }
+
+      axes {
+        x {
+          title {
+            value = "Time (Hourly)"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Bytes"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+      }
     }
 
     chart {
@@ -65,6 +103,25 @@ dashboard "vpc_flow_log_traffic_overview" {
       series "Total Bytes" {
         color = "purple"
       }
+
+      axes {
+        x {
+          title {
+            value = "Path Type"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Bytes"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+      }
     }
 
     chart {
@@ -72,6 +129,25 @@ dashboard "vpc_flow_log_traffic_overview" {
       query = query.vpc_flow_log_traffic_by_region
       type  = "column"
       width = 6
+
+      axes {
+        x {
+          title {
+            value = "Region"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Bytes"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+      }
     }
 
     chart {
@@ -83,6 +159,25 @@ dashboard "vpc_flow_log_traffic_overview" {
       series "request_count" {
         color = "orange"
       }
+
+      axes {
+        x {
+          title {
+            value = "Time (Hourly)"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Count"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+      }
     }
 
     chart {
@@ -93,6 +188,25 @@ dashboard "vpc_flow_log_traffic_overview" {
 
       series "request_count" {
         color = "green"
+      }
+
+      axes {
+        x {
+          title {
+            value = "Time (Hourly)"
+          }
+          labels {
+            display = "auto"
+          }
+        }
+        y {
+          title {
+            value = "Count"
+          }
+          labels {
+            display = "auto"
+          }
+        }
       }
     }
 
