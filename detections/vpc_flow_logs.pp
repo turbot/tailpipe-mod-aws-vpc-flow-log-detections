@@ -1,5 +1,5 @@
 benchmark "vpc_flow_log_detections" {
-  title       = "AWS VPC Flow Log Detections"
+  title       = "VPC Flow Log Detections"
   description = "Detection benchmark containing security alerts derived from analyzing AWS VPC Flow Log data."
   type        = "detection"
   children = [
