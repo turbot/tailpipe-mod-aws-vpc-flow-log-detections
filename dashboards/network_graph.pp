@@ -54,9 +54,13 @@ dashboard "network_graph" {
         EOQ
       }
 
-    edge {
-      title = "has traffic"
 
+    # Define in graph so it can be used in SQL query
+    category "high_conn_count" {
+      color = "red"
+    }
+
+    edge {
       sql = <<-EOQ
         with ip_pairs as (
           -- Get connections where IP1 is source and IP2 is destination
@@ -93,6 +97,9 @@ dashboard "network_graph" {
         select
           case when ip1 < ip2 then ip1 else ip2 end as from_id,
           case when ip1 < ip2 then ip2 else ip1 end as to_id,
+          case
+            when sum(connection_count) > 50 then 'high_conn_count'
+          end as category,
           sum(connection_count) as title
           --json_object(
             --'Connections', sum(connection_count)
