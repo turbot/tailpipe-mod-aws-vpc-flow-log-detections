@@ -22,7 +22,7 @@ locals {
 
 
   // Common display columns for detections
-  flow_log_detection_display_columns = [
+  vpc_flow_log_display_columns = [
     "time",
     "severity",
     "source_ip",

@@ -3,19 +3,18 @@ benchmark "vpc_flow_log_detections" {
   description = "Detection benchmark containing security alerts derived from analyzing AWS VPC Flow Log data."
   type        = "detection"
   children = [
-    detection.vpc_flow_log_connection_rejected,
-    detection.vpc_flow_log_log_skipped,
-    detection.vpc_flow_log_high_bytes_transfer,
-    detection.vpc_flow_log_ssh_access,
-    detection.vpc_flow_log_rdp_access,
-    detection.vpc_flow_log_database_access,
-    detection.vpc_flow_log_unusual_protocol,
-    detection.vpc_flow_log_high_packet_count,
-    detection.vpc_flow_log_icmp_traffic,
-    detection.vpc_flow_log_metadata_service_access,
-    detection.vpc_flow_log_ephemeral_port_traffic,
-    detection.vpc_flow_log_non_standard_web_ports,
-    detection.vpc_flow_log_direct_internet_access
+    detection.vpc_flow_connection_rejected,
+    detection.vpc_flow_connection_skipped,
+    detection.vpc_flow_connection_transferred_with_high_volume,
+    detection.vpc_flow_connection_established_with_ssh,
+    detection.vpc_flow_connection_established_with_rdp,
+    detection.vpc_flow_connection_established_with_database,
+    detection.vpc_flow_connection_established_with_unusual_protocol,
+    detection.vpc_flow_connection_transferred_with_high_packet_count,
+    detection.vpc_flow_connection_established_with_icmp,
+    detection.vpc_flow_connection_established_with_ephemeral_ports,
+    detection.vpc_flow_connection_established_with_non_standard_web_ports,
+    detection.vpc_flow_connection_established_with_internet
   ]
 
   tags = local.vpc_flow_log_detections_common_tags
@@ -25,16 +24,19 @@ benchmark "vpc_flow_log_detections" {
  * Detections and queries
  */
 
-detection "vpc_flow_log_connection_rejected" {
-  title       = "VPC Flow Log Connection Rejected"
-  description = "Detect when a connection is rejected by the VPC Flow Log."
-  severity    = "medium"
-  query       = query.vpc_flow_log_connection_rejected
+detection "vpc_flow_connection_rejected" {
+  title           = "VPC Flow Connection Rejected"
+  description     = "Detect when a connection was rejected in VPC Flow Logs to check for potential security group issues, network misconfigurations, or failed intrusion attempts."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_rejected
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0011:T1046" # Network Service Scanning
+  })
 }
 
-query "vpc_flow_log_connection_rejected" {
+query "vpc_flow_connection_rejected" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -42,21 +44,26 @@ query "vpc_flow_log_connection_rejected" {
       aws_vpc_flow_log
     where
       action = 'REJECT'
-      order by
-        tp_timestamp desc;
+      -- Additional filtering to reduce noise, for example:
+      and bytes > 0
+    order by
+      tp_timestamp desc;
   EOQ
 }
 
-detection "vpc_flow_log_log_skipped" {
-  title       = "VPC Flow Log Log Skipped"
-  description = "Detect when the VPC Flow Log skipped during the aggregation interval. This indicates an internal AWS capacity constraint or internal error."
-  severity    = "medium"
-  query       = query.vpc_flow_log_log_skipped
+detection "vpc_flow_connection_skipped" {
+  title           = "VPC Flow Logs Skipped"
+  description     = "Detect when VPC Flow Logs were skipped during the aggregation interval to check for potential gaps in network visibility that could mask malicious activity or compliance violations."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_skipped
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0005:T1562.001" # Impair Defenses: Disable or Modify Tools
+  })
 }
 
-query "vpc_flow_log_log_skipped" {
+query "vpc_flow_connection_skipped" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -64,21 +71,24 @@ query "vpc_flow_log_log_skipped" {
       aws_vpc_flow_log
     where
       log_status = 'SKIPDATA'
-      order by
-        tp_timestamp desc;
+    order by
+      tp_timestamp desc;
   EOQ
 }
 
-detection "vpc_flow_log_high_bytes_transfer" {
-  title       = "VPC Flow Log High Bytes Transfer"
-  description = "Detect large data transfers that might indicate data exfiltration or unauthorized data movement."
-  severity    = "medium"
-  query       = query.vpc_flow_log_high_bytes_transfer
+detection "vpc_flow_connection_transferred_with_high_volume" {
+  title           = "VPC Flow Connection Transferred With High Volume"
+  description     = "Detect when a VPC network flow transferred an unusually large amount of data to check for potential data exfiltration, unauthorized data transfers, or compromise of cloud resources."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_transferred_with_high_volume
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0010:T1048" # Exfiltration: Exfiltration Over Alternative Protocol
+  })
 }
 
-query "vpc_flow_log_high_bytes_transfer" {
+query "vpc_flow_connection_transferred_with_high_volume" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -93,16 +103,19 @@ query "vpc_flow_log_high_bytes_transfer" {
   EOQ
 }
 
-detection "vpc_flow_log_ssh_access" {
-  title       = "VPC Flow Log SSH Access"
-  description = "Detect SSH connections to instances, which should be monitored for security purposes."
-  severity    = "medium"
-  query       = query.vpc_flow_log_ssh_access
+detection "vpc_flow_connection_established_with_ssh" {
+  title           = "VPC Flow Connection Established With SSH"
+  description     = "Detect when a VPC network flow established an SSH connection to check for potential unauthorized access, lateral movement, or command and control activities."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_ssh
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0008:T1021.004" # Lateral Movement: Remote Services: SSH
+  })
 }
 
-query "vpc_flow_log_ssh_access" {
+query "vpc_flow_connection_established_with_ssh" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -116,16 +129,19 @@ query "vpc_flow_log_ssh_access" {
   EOQ
 }
 
-detection "vpc_flow_log_rdp_access" {
-  title       = "VPC Flow Log RDP Access"
-  description = "Detect RDP connections to instances, which should be monitored for security purposes."
-  severity    = "medium"
-  query       = query.vpc_flow_log_rdp_access
+detection "vpc_flow_connection_established_with_rdp" {
+  title           = "VPC Flow Connection Established With RDP"
+  description     = "Detect when a VPC network flow established an RDP connection to check for potential unauthorized access, lateral movement, or command and control activities."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_rdp
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0008:T1021.001" # Lateral Movement: Remote Services: Remote Desktop Protocol
+  })
 }
 
-query "vpc_flow_log_rdp_access" {
+query "vpc_flow_connection_established_with_rdp" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -139,16 +155,19 @@ query "vpc_flow_log_rdp_access" {
   EOQ
 }
 
-detection "vpc_flow_log_database_access" {
-  title       = "VPC Flow Log Database Access"
-  description = "Detect connections to common database ports, which should be monitored for security purposes."
-  severity    = "medium"
-  query       = query.vpc_flow_log_database_access
+detection "vpc_flow_connection_established_with_database" {
+  title           = "VPC Flow Connection Established With Database"
+  description     = "Detect when a VPC network flow established a connection to database ports to check for potential unauthorized access, data exfiltration, or lateral movement activities."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_database
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0008:T1210" # Lateral Movement: Exploitation of Remote Services
+  })
 }
 
-query "vpc_flow_log_database_access" {
+query "vpc_flow_connection_established_with_database" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -162,16 +181,19 @@ query "vpc_flow_log_database_access" {
   EOQ
 }
 
-detection "vpc_flow_log_unusual_protocol" {
-  title       = "VPC Flow Log Unusual Protocol"
-  description = "Detect traffic using unusual protocols that might indicate tunneling or covert channels."
-  severity    = "medium"
-  query       = query.vpc_flow_log_unusual_protocol
+detection "vpc_flow_connection_established_with_unusual_protocol" {
+  title           = "VPC Flow Connection Established With Unusual Protocol"
+  description     = "Detect when a VPC network flow established a connection using unusual protocols to check for potential tunneling, covert channels, or command and control communications."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_unusual_protocol
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0011:T1071.001" # Command and Control: Application Layer Protocol: Web Protocols
+  })
 }
 
-query "vpc_flow_log_unusual_protocol" {
+query "vpc_flow_connection_established_with_unusual_protocol" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -185,16 +207,19 @@ query "vpc_flow_log_unusual_protocol" {
   EOQ
 }
 
-detection "vpc_flow_log_high_packet_count" {
-  title       = "VPC Flow Log High Packet Count"
-  description = "Detect flows with an unusually high packet count which might indicate scanning, DDoS, or other unusual activity."
-  severity    = "medium"
-  query       = query.vpc_flow_log_high_packet_count
+detection "vpc_flow_connection_transferred_with_high_packet_count" {
+  title           = "VPC Flow Connection Transferred With High Packet Count"
+  description     = "Detect when a VPC network flow transferred an unusually high number of packets to check for potential scanning, denial of service attacks, or other abnormal network behaviors."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_transferred_with_high_packet_count
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0040:T1498" # Impact: Network Denial of Service
+  })
 }
 
-query "vpc_flow_log_high_packet_count" {
+query "vpc_flow_connection_transferred_with_high_packet_count" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -209,16 +234,19 @@ query "vpc_flow_log_high_packet_count" {
   EOQ
 }
 
-detection "vpc_flow_log_icmp_traffic" {
-  title       = "VPC Flow Log ICMP Traffic"
-  description = "Detect ICMP traffic which might indicate ping sweeps, network diagnostics, or reconnaissance."
-  severity    = "low"
-  query       = query.vpc_flow_log_icmp_traffic
+detection "vpc_flow_connection_established_with_icmp" {
+  title           = "VPC Flow Connection Established With ICMP"
+  description     = "Detect when a VPC network flow used ICMP protocol to check for potential reconnaissance activities, ping sweeps, or network mapping attempts."
+  severity        = "low"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_icmp
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0043:T1595.001" # Reconnaissance: Active Scanning: Scanning IP Blocks
+  })
 }
 
-query "vpc_flow_log_icmp_traffic" {
+query "vpc_flow_connection_established_with_icmp" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -231,38 +259,19 @@ query "vpc_flow_log_icmp_traffic" {
   EOQ
 }
 
-detection "vpc_flow_log_metadata_service_access" {
-  title       = "VPC Flow Log EC2 Metadata Service Access"
-  description = "Detect traffic to the EC2 metadata service IP address, which could indicate attempts to gather instance information."
-  severity    = "medium"
-  query       = query.vpc_flow_log_metadata_service_access
+detection "vpc_flow_connection_established_with_ephemeral_ports" {
+  title           = "VPC Flow Connection Established With Ephemeral Ports"
+  description     = "Detect when a VPC network flow established a connection to high ephemeral ports to check for potential command and control channels, non-standard services, or data exfiltration attempts."
+  severity        = "low"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_ephemeral_ports
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0011:T1571" # Command and Control: Non-Standard Port
+  })
 }
 
-query "vpc_flow_log_metadata_service_access" {
-  sql = <<-EOQ
-    select
-      ${local.detection_sql_columns}
-    from
-      aws_vpc_flow_log
-    where
-      dst_addr = '169.254.169.254'
-    order by
-      tp_timestamp desc;
-  EOQ
-}
-
-detection "vpc_flow_log_ephemeral_port_traffic" {
-  title       = "VPC Flow Log Ephemeral Port Traffic"
-  description = "Detect traffic on high ephemeral ports, which might indicate dynamic services or command and control traffic."
-  severity    = "low"
-  query       = query.vpc_flow_log_ephemeral_port_traffic
-
-  tags = local.vpc_flow_log_detections_common_tags
-}
-
-query "vpc_flow_log_ephemeral_port_traffic" {
+query "vpc_flow_connection_established_with_ephemeral_ports" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -277,16 +286,22 @@ query "vpc_flow_log_ephemeral_port_traffic" {
   EOQ
 }
 
-detection "vpc_flow_log_non_standard_web_ports" {
-  title       = "VPC Flow Log Non-Standard Web Ports"
-  description = "Detect web traffic on non-standard ports, which might indicate web services running on unusual ports or attempts to evade security controls."
+detection "vpc_flow_connection_established_with_non_standard_web_ports" {
+  title       = "VPC Flow Connection Established With Non-Standard Web Ports"
+  description = "Detect when a VPC network flow established a connection to web services on non-standard ports to check for potential security control evasion, command and control channels, or misconfigured services."
   severity    = "low"
-  query       = query.vpc_flow_log_non_standard_web_ports
 
-  tags = local.vpc_flow_log_detections_common_tags
+  # Assuming these display columns are defined in a local variable
+  display_columns = local.vpc_flow_log_display_columns
+
+  query = query.vpc_flow_connection_established_with_non_standard_web_ports
+
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0011:T1571" # Command and Control: Non-Standard Port
+  })
 }
 
-query "vpc_flow_log_non_standard_web_ports" {
+query "vpc_flow_connection_established_with_non_standard_web_ports" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -305,16 +320,19 @@ query "vpc_flow_log_non_standard_web_ports" {
   EOQ
 }
 
-detection "vpc_flow_log_direct_internet_access" {
-  title       = "VPC Flow Log Direct Internet Access"
-  description = "Detect traffic directly to the internet (not through NAT Gateway or other AWS service), which might indicate improperly configured security."
-  severity    = "medium"
-  query       = query.vpc_flow_log_direct_internet_access
+detection "vpc_flow_connection_established_with_internet" {
+  title           = "VPC Flow Connection Established With Internet"
+  description     = "Detect when a VPC network flow established a direct connection to the internet to check for potential data exfiltration, command and control activity, or improperly configured security controls."
+  severity        = "medium"
+  display_columns = local.vpc_flow_log_display_columns
+  query           = query.vpc_flow_connection_established_with_internet
 
-  tags = local.vpc_flow_log_detections_common_tags
+  tags = merge(local.vpc_flow_log_detections_common_tags, {
+    mitre_attack_ids = "TA0011:T1133" # Command and Control: External Remote Services
+  })
 }
 
-query "vpc_flow_log_direct_internet_access" {
+query "vpc_flow_connection_established_with_internet" {
   sql = <<-EOQ
     select
       ${local.detection_sql_columns}
@@ -322,9 +340,18 @@ query "vpc_flow_log_direct_internet_access" {
       aws_vpc_flow_log
     where
       flow_direction = 'egress'
-      and (dst_addr not like '10.%' and dst_addr not like '172.1_.%' and dst_addr not like '172.2_.%' and dst_addr not like '172.3_.%' and dst_addr not like '192.168.%')
-      and dst_addr not like '169.254.%'
       and action = 'ACCEPT'
+      -- Exclude RFC1918 private IP ranges (IPv4)
+      and (
+        dst_addr not like '10.%' 
+        and (dst_addr not between '172.16.0.0' and '172.31.255.255')
+        and dst_addr not like '192.168.%'
+      )
+      -- Exclude link-local addresses
+      and dst_addr not like '169.254.%'
+      -- Exclude RFC4193 private IP ranges (IPv6)
+      and dst_addr not like 'fc00:%'
+      and dst_addr not like 'fd00:%'
     order by
       tp_timestamp desc;
   EOQ
