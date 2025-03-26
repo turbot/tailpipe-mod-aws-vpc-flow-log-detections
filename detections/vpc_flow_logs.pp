@@ -27,12 +27,13 @@ benchmark "vpc_flow_log_detections" {
 detection "vpc_flow_connection_rejected" {
   title           = "VPC Flow Connection Rejected"
   description     = "Detect when a connection was rejected in VPC Flow Logs to check for potential security group issues, network misconfigurations, or failed intrusion attempts."
+  documentation   = file("./detections/docs/vpc_flow_connection_rejected.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_rejected
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0011:T1046" # Network Service Scanning
+    mitre_attack_ids = "TA0011:T1046"
   })
 }
 
@@ -54,12 +55,13 @@ query "vpc_flow_connection_rejected" {
 detection "vpc_flow_connection_skipped" {
   title           = "VPC Flow Logs Skipped"
   description     = "Detect when VPC Flow Logs were skipped during the aggregation interval to check for potential gaps in network visibility that could mask malicious activity or compliance violations."
+  documentation   = file("./detections/docs/vpc_flow_connection_skipped.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_skipped
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0005:T1562.001" # Impair Defenses: Disable or Modify Tools
+    mitre_attack_ids = "TA0005:T1562.001"
   })
 }
 
@@ -79,12 +81,13 @@ query "vpc_flow_connection_skipped" {
 detection "vpc_flow_connection_transferred_with_high_volume" {
   title           = "VPC Flow Connection Transferred With High Volume"
   description     = "Detect when a VPC network flow transferred an unusually large amount of data to check for potential data exfiltration, unauthorized data transfers, or compromise of cloud resources."
+  documentation   = file("./detections/docs/vpc_flow_connection_transferred_with_high_volume.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_transferred_with_high_volume
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0010:T1048" # Exfiltration: Exfiltration Over Alternative Protocol
+    mitre_attack_ids = "TA0010:T1048"
   })
 }
 
@@ -106,12 +109,13 @@ query "vpc_flow_connection_transferred_with_high_volume" {
 detection "vpc_flow_connection_established_with_ssh" {
   title           = "VPC Flow Connection Established With SSH"
   description     = "Detect when a VPC network flow established an SSH connection to check for potential unauthorized access, lateral movement, or command and control activities."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_ssh.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_ssh
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0008:T1021.004" # Lateral Movement: Remote Services: SSH
+    mitre_attack_ids = "TA0008:T1021.004"
   })
 }
 
@@ -132,12 +136,13 @@ query "vpc_flow_connection_established_with_ssh" {
 detection "vpc_flow_connection_established_with_rdp" {
   title           = "VPC Flow Connection Established With RDP"
   description     = "Detect when a VPC network flow established an RDP connection to check for potential unauthorized access, lateral movement, or command and control activities."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_rdp.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_rdp
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0008:T1021.001" # Lateral Movement: Remote Services: Remote Desktop Protocol
+    mitre_attack_ids = "TA0008:T1021.001"
   })
 }
 
@@ -158,12 +163,13 @@ query "vpc_flow_connection_established_with_rdp" {
 detection "vpc_flow_connection_established_with_database" {
   title           = "VPC Flow Connection Established With Database"
   description     = "Detect when a VPC network flow established a connection to database ports to check for potential unauthorized access, data exfiltration, or lateral movement activities."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_database.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_database
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0008:T1210" # Lateral Movement: Exploitation of Remote Services
+    mitre_attack_ids = "TA0008:T1210"
   })
 }
 
@@ -184,12 +190,13 @@ query "vpc_flow_connection_established_with_database" {
 detection "vpc_flow_connection_established_with_unusual_protocol" {
   title           = "VPC Flow Connection Established With Unusual Protocol"
   description     = "Detect when a VPC network flow established a connection using unusual protocols to check for potential tunneling, covert channels, or command and control communications."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_unusual_protocol.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_unusual_protocol
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0011:T1071.001" # Command and Control: Application Layer Protocol: Web Protocols
+    mitre_attack_ids = "TA0011:T1071.001"
   })
 }
 
@@ -210,12 +217,13 @@ query "vpc_flow_connection_established_with_unusual_protocol" {
 detection "vpc_flow_connection_transferred_with_high_packet_count" {
   title           = "VPC Flow Connection Transferred With High Packet Count"
   description     = "Detect when a VPC network flow transferred an unusually high number of packets to check for potential scanning, denial of service attacks, or other abnormal network behaviors."
+  documentation   = file("./detections/docs/vpc_flow_connection_transferred_with_high_packet_count.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_transferred_with_high_packet_count
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0040:T1498" # Impact: Network Denial of Service
+    mitre_attack_ids = "TA0040:T1498"
   })
 }
 
@@ -237,12 +245,13 @@ query "vpc_flow_connection_transferred_with_high_packet_count" {
 detection "vpc_flow_connection_established_with_icmp" {
   title           = "VPC Flow Connection Established With ICMP"
   description     = "Detect when a VPC network flow used ICMP protocol to check for potential reconnaissance activities, ping sweeps, or network mapping attempts."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_icmp.md")
   severity        = "low"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_icmp
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0043:T1595.001" # Reconnaissance: Active Scanning: Scanning IP Blocks
+    mitre_attack_ids = "TA0043:T1595.001"
   })
 }
 
@@ -262,12 +271,13 @@ query "vpc_flow_connection_established_with_icmp" {
 detection "vpc_flow_connection_established_with_ephemeral_ports" {
   title           = "VPC Flow Connection Established With Ephemeral Ports"
   description     = "Detect when a VPC network flow established a connection to high ephemeral ports to check for potential command and control channels, non-standard services, or data exfiltration attempts."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_ephemeral_ports.md")
   severity        = "low"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_ephemeral_ports
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0011:T1571" # Command and Control: Non-Standard Port
+    mitre_attack_ids = "TA0011:T1571"
   })
 }
 
@@ -287,17 +297,15 @@ query "vpc_flow_connection_established_with_ephemeral_ports" {
 }
 
 detection "vpc_flow_connection_established_with_non_standard_web_ports" {
-  title       = "VPC Flow Connection Established With Non-Standard Web Ports"
-  description = "Detect when a VPC network flow established a connection to web services on non-standard ports to check for potential security control evasion, command and control channels, or misconfigured services."
-  severity    = "low"
-
-  # Assuming these display columns are defined in a local variable
+  title           = "VPC Flow Connection Established With Non-Standard Web Ports"
+  description     = "Detect when a VPC network flow established a connection to web services on non-standard ports to check for potential security control evasion, command and control channels, or misconfigured services."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_non_standard_web_ports.md")
+  severity        = "low"
   display_columns = local.vpc_flow_log_display_columns
-
-  query = query.vpc_flow_connection_established_with_non_standard_web_ports
+  query           = query.vpc_flow_connection_established_with_non_standard_web_ports
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0011:T1571" # Command and Control: Non-Standard Port
+    mitre_attack_ids = "TA0011:T1571"
   })
 }
 
@@ -323,12 +331,13 @@ query "vpc_flow_connection_established_with_non_standard_web_ports" {
 detection "vpc_flow_connection_established_with_internet" {
   title           = "VPC Flow Connection Established With Internet"
   description     = "Detect when a VPC network flow established a direct connection to the internet to check for potential data exfiltration, command and control activity, or improperly configured security controls."
+  documentation   = file("./detections/docs/vpc_flow_connection_established_with_internet.md")
   severity        = "medium"
   display_columns = local.vpc_flow_log_display_columns
   query           = query.vpc_flow_connection_established_with_internet
 
   tags = merge(local.vpc_flow_log_detections_common_tags, {
-    mitre_attack_ids = "TA0011:T1133" # Command and Control: External Remote Services
+    mitre_attack_ids = "TA0011:T1133"
   })
 }
 
