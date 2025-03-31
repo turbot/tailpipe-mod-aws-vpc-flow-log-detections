@@ -6,5 +6,3 @@ Detect when a VPC network flow transferred an unusually large amount of data. Hi
 - [VPC Flow Logs Documentation](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html)
 - [Monitoring VPC Traffic](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-monitoring.html)
 - [AWS Security Best Practices](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html)
-- [Data Exfiltration Protection](https://aws.amazon.com/blogs/security/how-to-help-protect-data-exfiltration-with-aws-network-firewall/)
-- [Analyzing VPC Flow Logs with Amazon Athena](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-athena.html)
