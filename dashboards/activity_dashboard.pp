@@ -145,7 +145,7 @@ dashboard "activity_dashboard" {
     */
 
     chart {
-      title = "Top 10 Source IPs"
+      title = "Top 10 Source IPs by Connections"
       query = query.vpc_flow_log_top_ips_by_traffic
       type  = "table"
       width = 6
@@ -260,7 +260,7 @@ query "vpc_flow_log_accepted_vs_rejected" {
 }
 
 query "vpc_flow_log_top_ips_by_traffic" {
-  title       = "Top 10 IP Addresses"
+  title       = "Top 10 IP Addresses by Connections"
   description = "List the top 10 source IP addresses generating the most traffic."
 
   sql = <<-EOQ

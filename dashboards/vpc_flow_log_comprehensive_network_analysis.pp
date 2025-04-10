@@ -17,8 +17,28 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
         aws_vpc_flow_log
       where
         src_addr is not null
+      group by
+        src_addr
       order by
         src_addr;
+    EOQ
+    width = 4
+  }
+
+  input "destination_ip" {
+    title = "Select a destination IP address (optional):"
+    sql   = <<-EOQ
+      select 
+        'all' as value,
+        'All' as label
+      union all
+      select distinct
+        dst_addr as value,
+        dst_addr as label
+      from
+        aws_vpc_flow_log
+      where
+        dst_addr is not null;
     EOQ
     width = 4
   }
@@ -78,12 +98,13 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
         where
           src_addr = $1
           and dst_addr is not null
+          and ($2 = 'all' or dst_addr = $2)
         group by 
           src_addr, dst_addr, instance_id, interface_id, subnet_id, vpc_id,
           ecs_task_id, ecs_cluster_name, ecs_service_name, ecs_container_id,
           action, protocol, dst_port, flow_direction
         having 
-          sum(bytes) >= cast($2 as bigint)
+          sum(bytes) >= $3::bigint
         order by 
           total_bytes desc
         limit 500
@@ -100,10 +121,20 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
         
         union
         
-        -- Destination IPs
+        -- Destination IPs with request count
         select distinct 
           dst_addr as id,
-          dst_addr as title,
+          case 
+            when $2 = 'all' then 
+              dst_addr || ' (' || (
+                select count(*) 
+                from aws_vpc_flow_log 
+                where src_addr = $1 
+                and dst_addr = traffic_data.dst_addr
+              ) || ' request(s))'
+            else 
+              dst_addr
+          end as title,
           'destination_ip' as category
         from 
           traffic_data
@@ -415,7 +446,7 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
         exists (select 1 from all_nodes where all_nodes.id = traffic_edges.from_id)
         and exists (select 1 from all_nodes where all_nodes.id = traffic_edges.to_id);
     EOQ
-    args = [self.input.source_ip.value, self.input.min_traffic.value]
+    args = [self.input.source_ip.value, self.input.destination_ip.value, self.input.min_traffic.value]
   }
 
   table {
@@ -447,17 +478,18 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
       where
         src_addr = $1
         and dst_addr is not null
+        and ($2 = 'all' or dst_addr = $2)
       group by
         dst_addr, action, protocol, dst_port, flow_direction,
         instance_id, interface_id, subnet_id, vpc_id,
         ecs_task_id, ecs_cluster_name, ecs_service_name
       having
-        sum(bytes) >= cast($2 as bigint)
+        sum(bytes) >= $3::bigint
       order by
         sum(bytes) desc
-      limit 50;
+      limit 1000;
     EOQ
-    args = [self.input.source_ip.value, self.input.min_traffic.value]
+    args = [self.input.source_ip.value, self.input.destination_ip.value, self.input.min_traffic.value]
     width = 12
   }
 }
