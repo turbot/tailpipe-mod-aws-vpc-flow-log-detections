@@ -2,12 +2,12 @@ category "ip_address" {
   title = "IP Address"
   #color = "blue"
   icon  = "server"
-  # href = "/aws_vpc_flow_log_detections.dashboard.vpc_flow_log_comprehensive_network_analysis?input.source_ip={{.properties.'ip' | @uri}}"
+  # href = "/aws_vpc_flow_log_detections.dashboard.source_ip_traffic_map?input.source_ip={{.properties.'ip' | @uri}}"
 }
 
 dashboard "network_graph" {
   title         = "VPC Flow Log Network Graph"
-  documentation = "Visualizes VPC flow log data as a network graph showing traffic relationships between IP addresses."
+  documentation = file("./dashboards/docs/network_graph.md")
 
   tags = {
     type    = "Dashboard"

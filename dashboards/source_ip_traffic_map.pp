@@ -1,6 +1,6 @@
-dashboard "vpc_flow_log_comprehensive_network_analysis" {
-  title         = "VPC Flow Log Comprehensive Network Analysis"
-  documentation = "Visualizes network traffic from a specific source IP address to all associated AWS resources, including ENI connections."
+dashboard "source_ip_traffic_map" {
+  title         = "VPC Flow Log Source IP Traffic Map"
+  documentation = file("./dashboards/docs/source_ip_traffic_map.md")
 
   tags = {
     service = "AWS/VPC"
@@ -450,7 +450,7 @@ dashboard "vpc_flow_log_comprehensive_network_analysis" {
   }
 
   table {
-    title = "Comprehensive Resource Details for Source IP"
+    title = "Resource Details for Source IP"
     sql   = <<-EOQ
       select
         dst_addr as "Destination IP",
