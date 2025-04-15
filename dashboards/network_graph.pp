@@ -53,6 +53,9 @@ dashboard "network_graph" {
             ip
           limit 5000
         EOQ
+        tags = {
+          folder = "Hidden"
+        }
       }
 
 
@@ -115,6 +118,9 @@ dashboard "network_graph" {
         order by
           from_id;
       EOQ
+      tags = {
+        folder = "Hidden"
+      }
     }
   }
 }

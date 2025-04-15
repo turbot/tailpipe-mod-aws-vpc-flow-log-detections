@@ -23,6 +23,9 @@ dashboard "source_ip_traffic_map" {
         src_addr;
     EOQ
     width = 4
+    tags = {
+      folder = "Hidden"
+    }
   }
 
   input "destination_ip" {
@@ -41,6 +44,9 @@ dashboard "source_ip_traffic_map" {
         dst_addr is not null;
     EOQ
     width = 4
+    tags = {
+      folder = "Hidden"
+    }
   }
 
   input "min_traffic" {
@@ -64,6 +70,9 @@ dashboard "source_ip_traffic_map" {
       order by value;
     EOQ
     width = 2
+    tags = {
+      folder = "Hidden"
+    }
   }
 
   graph {
@@ -447,6 +456,9 @@ dashboard "source_ip_traffic_map" {
         and exists (select 1 from all_nodes where all_nodes.id = traffic_edges.to_id);
     EOQ
     args = [self.input.source_ip.value, self.input.destination_ip.value, self.input.min_traffic.value]
+    tags = {
+      folder = "Hidden"
+    }
   }
 
   table {
@@ -491,5 +503,8 @@ dashboard "source_ip_traffic_map" {
     EOQ
     args = [self.input.source_ip.value, self.input.destination_ip.value, self.input.min_traffic.value]
     width = 12
+    tags = {
+      folder = "Hidden"
+    }
   }
 }
