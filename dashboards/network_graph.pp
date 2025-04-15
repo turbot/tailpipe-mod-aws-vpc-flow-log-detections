@@ -51,7 +51,7 @@ dashboard "network_graph" {
             all_ips
           order by
             ip
-          limit 5000
+          limit 5000;
         EOQ
         tags = {
           folder = "Hidden"
