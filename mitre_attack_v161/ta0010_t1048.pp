@@ -9,7 +9,6 @@ benchmark "mitre_attack_v161_ta0010_t1048" {
   type          = "detection"
   documentation = file("./mitre_attack_v161/docs/ta0010_t1048.md")
   children = [
-    detection.vpc_flow_connection_established_with_non_standard_web_ports,
     detection.vpc_flow_connection_transferred_with_high_volume,
   ]
 

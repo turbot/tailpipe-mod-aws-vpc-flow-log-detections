@@ -8,29 +8,28 @@ locals {
 
 locals {
   detection_sql_columns = <<-SQL
-      tp_id as id,
-      tp_timestamp as time,
-      account_id as account_id,
-      region as region,
-      vpc_id as vpc_id,
-      src_addr as source_ip,
-      src_port as source_port,
-      dst_addr as destination_ip,
-      dst_port as destination_port,
-      *
-    SQL
+    tp_timestamp as timestamp,
+    action as operation,
+    vpc_id as resource,
+    src_addr as actor,
+    tp_source_ip as source_ip,
+    account_id,
+    region,
+    tp_id as source_id,
+    *
+    exclude (account_id, region)
+  SQL
 
 
   // Common display columns for detections
-  vpc_flow_log_display_columns = [
-    "time",
-    "severity",
+  detection_display_columns = [
+    "timestamp",
+    "operation",
+    "resource",
+    "actor",
     "source_ip",
-    "destination_ip",
-    "destination_port",
-    "protocol",
-    "bytes",
+    "account_id",
     "region",
-    "account_id"
+    "source_id"
   ]
 }
