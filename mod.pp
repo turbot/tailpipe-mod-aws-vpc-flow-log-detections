@@ -2,9 +2,9 @@ mod "aws_vpc_flow_log_detections" {
   title         = "AWS VPC Flow Log Detections"
   description   = "Run detections and view dashboards for your AWS VPC Flow Logs to monitor and analyze network activity across your AWS accounts using Powerpipe and Tailpipe."
   color         = "#FF9900"
-  documentation = file("./README.md")
+  documentation = file("./docs/index.md")
   icon          = "/images/mods/turbot/aws-vpc-flow-log-detections.svg"
-  categories    = ["aws", "security", "compliance", "logging"]
+  categories    = ["aws", "dashboard", "detections", "public cloud"]
   database      = var.database
 
   opengraph {

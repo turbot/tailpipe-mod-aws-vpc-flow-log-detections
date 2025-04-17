@@ -2,23 +2,15 @@
 
 [Tailpipe](https://tailpipe.io) is an open-source CLI tool that allows you to collect logs and query them with SQL.
 
-[AWS VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html) provide visibility into network traffic that traverses your VPC. Flow logs capture information about the IP traffic going to and from network interfaces in your VPC.
+[AWS](https://aws.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-The AWS VPC Flow Log Detections Mod contains pre-built dashboards and detections, which can be used to monitor and analyze network activity across your AWS accounts. The detections cover a wide range of security scenarios including:
-
-- Unusual port activity
-- Large data transfers
-- Port and service scanning
-- Access to sensitive internal services from public IPs
-- Suspicious outbound traffic
-- Communication with known bad IPs
-- And more...
+The [AWS VPC Flow Log Detections Mod](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-aws-vpc-flow-log-detections) contains pre-built dashboards and detections, which can be used to monitor and analyze network activity across your AWS accounts.
 
 Run detection benchmarks:
-![image](https://turbot.com/images/product-screenshots/tailpipe-vpc-flow-log-detections-terminal.png)
+![image](docs/images/aws_vpc_flow_log_mitre_dashboard.png)
 
 View insights in dashboards:
-![image](https://turbot.com/images/product-screenshots/tailpipe-vpc-flow-log-detections-dashboard.png)
+![image](docs/images/aws_vpc_flow_log_activity_dashboard.png)
 
 ## Documentation
 
