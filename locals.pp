@@ -10,14 +10,25 @@ locals {
   detection_sql_columns = <<-SQL
     tp_timestamp as timestamp,
     action as operation,
-    vpc_id as resource,
-    src_addr as actor,
-    tp_source_ip as source_ip,
+    interface_id as resource,
+    src_addr as source_ip,
+    src_port::varchar as source_port,
+    dst_addr as destination_ip,
+    dst_port::varchar as destination_port,
+    case
+      when protocol = 1 then 'ICMP (1)'
+      when protocol = 6 then 'TCP (6)'
+      when protocol = 17 then 'UDP (17)'
+      else 'Other (' || protocol || ')'
+    end as protocol,
     account_id,
     region,
+    vpc_id,
     tp_id as source_id,
+     -- Create new aliases to preserve original row data
+    protocol as protocol_src,
     *
-    exclude (account_id, region)
+    exclude (account_id, protocol, region, vpc_id)
   SQL
 
 
@@ -26,10 +37,14 @@ locals {
     "timestamp",
     "operation",
     "resource",
-    "actor",
     "source_ip",
+    "source_port",
+    "destination_ip",
+    "destination_port",
+    "protocol",
     "account_id",
     "region",
+    "vpc_id",
     "source_id"
   ]
 }

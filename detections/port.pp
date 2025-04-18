@@ -87,7 +87,7 @@ query "database_traffic" {
     where
       dst_port in (
         -- AWS Aurora
-        1150,  
+        1150,
         -- Microsoft SQL Server
         1433,
         1434,
@@ -102,7 +102,7 @@ query "database_traffic" {
         5432,
         5433,
         -- CouchDB
-        5984,  
+        5984,
         -- Redis/ElastiCache
         6379,
         6380,
@@ -116,9 +116,9 @@ query "database_traffic" {
         9160,
         -- Caching/Key-Value Stores
         -- ArangoDB
-        8529,  
+        8529,
         -- Memcached
-        11211, 
+        11211,
         -- MongoDB/DocumentDB
         27017,
         27018,
