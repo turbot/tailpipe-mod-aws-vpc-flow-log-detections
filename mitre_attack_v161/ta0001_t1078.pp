@@ -20,8 +20,8 @@ benchmark "mitre_attack_v161_ta0001_t1078_004" {
   type          = "detection"
   documentation = file("./mitre_attack_v161/docs/ta0001_t1078_004.md")
   children = [
-    detection.vpc_flow_connection_established_with_ssh,
-    detection.vpc_flow_connection_established_with_rdp,
+    detection.ssh_traffic,
+    detection.rdp_traffic,
   ]
 
   tags = merge(local.mitre_attack_v161_ta0001_t1078_common_tags, {

@@ -20,7 +20,7 @@ benchmark "mitre_attack_v161_ta0040_t1498_001" {
   type          = "detection"
   documentation = file("./mitre_attack_v161/docs/ta0040_t1498_001.md")
   children = [
-    detection.vpc_flow_connection_transferred_with_high_packet_count,
+    detection.high_packet_traffic,
   ]
 
   tags = merge(local.mitre_attack_v161_ta0040_t1498_common_tags, {

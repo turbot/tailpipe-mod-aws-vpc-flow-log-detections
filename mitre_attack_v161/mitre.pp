@@ -12,7 +12,6 @@ benchmark "mitre_attack_v161" {
   children = [
     benchmark.mitre_attack_v161_ta0001,
     benchmark.mitre_attack_v161_ta0002,
-    benchmark.mitre_attack_v161_ta0005,
     benchmark.mitre_attack_v161_ta0008,
     benchmark.mitre_attack_v161_ta0010,
     benchmark.mitre_attack_v161_ta0040,

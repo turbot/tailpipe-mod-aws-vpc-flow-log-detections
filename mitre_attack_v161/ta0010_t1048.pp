@@ -9,7 +9,7 @@ benchmark "mitre_attack_v161_ta0010_t1048" {
   type          = "detection"
   documentation = file("./mitre_attack_v161/docs/ta0010_t1048.md")
   children = [
-    detection.vpc_flow_connection_transferred_with_high_volume,
+    detection.large_data_transfer,
   ]
 
   tags = local.mitre_attack_v161_ta0010_t1048_common_tags

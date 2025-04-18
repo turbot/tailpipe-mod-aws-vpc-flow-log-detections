@@ -28,8 +28,7 @@ brew install turbot/tap/powerpipe
 sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
-This mod also requires AWS VPC Flow Logs to be collected using Tailpipe with the AWS plugin:
-
+This mod also requires AWS VPC flow logs to be collected using Tailpipe with the AWS plugin:
 - [Get started with the AWS plugin for Tailpipe →](https://tailpipe.io/plugins/turbot/aws)
 
 Install the mod:
