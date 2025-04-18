@@ -10,17 +10,17 @@ dashboard "activity_dashboard" {
   container {
     # Summary cards
     card {
-      query = query.vpc_flow_log_total_logs
+      query = query.activity_dashboard_total_records
       width = 2
     }
 
     card {
-      query = query.vpc_flow_log_total_volume_in_bytes
+      query = query.activity_dashboard_total_accepted_traffic
       width = 2
     }
 
     card {
-      query = query.vpc_flow_log_total_packets
+      query = query.activity_dashboard_total_rejected_traffic
       width = 2
     }
   }
@@ -28,22 +28,8 @@ dashboard "activity_dashboard" {
   container {
 
     chart {
-      title = "Connections by Region"
-      query = query.vpc_flow_log_traffic_by_region
-      type  = "column"
-      width = 6
-    }
-
-    chart {
-      title = "Connections by Protocol"
-      query = query.vpc_flow_log_traffic_by_protocol
-      type  = "donut"
-      width = 6
-    }
-
-    chart {
-      title = "Accepted vs. Rejected Connections"
-      query = query.vpc_flow_log_accepted_vs_rejected
+      title = "Accepted vs. Rejected Traffic"
+      query = query.activity_dashboard_accepted_rejected_traffic
       type  = "line"
       width = 6
 
@@ -56,136 +42,73 @@ dashboard "activity_dashboard" {
       }
     }
 
-    /*
     chart {
-      title = "Ingress vs. Egress Connections"
-      query = query.vpc_flow_log_ingress_vs_egress
-      type  = "line"
+      title = "Traffic by Log Status"
+      query = query.activity_dashboard_traffic_by_log_status
+      type  = "donut"
       width = 6
-
-      series "ingress" {
-        color = "blue"
-      }
-
-      series "egress" {
-        color = "orange"
-      }
     }
 
     chart {
-      title = "Egress Traffic Path Analysis"
-      query = query.vpc_flow_log_egress_path_analysis
-      type  = "column"
+      title = "Traffic by Region"
+      query = query.activity_dashboard_traffic_by_region
+      type  = "bar"
       width = 6
-
-      series "Connections" {
-        color = "purple"
-      }
     }
 
     chart {
-      title = "HTTP Requests (Port 80 Traffic)"
-      query = query.vpc_flow_log_http_requests
-      type  = "line"
+      title = "Traffic by Protocol"
+      query = query.activity_dashboard_traffic_by_protocol
+      type  = "donut"
       width = 6
-
-      series "Connections" {
-        color = "orange"
-      }
-
-      axes {
-        x {
-          title {
-            value = "Time (Daily)"
-          }
-          labels {
-            display = "auto"
-          }
-        }
-        y {
-          title {
-            value = "Connections"
-          }
-          labels {
-            display = "auto"
-          }
-        }
-      }
     }
 
     chart {
-      title = "HTTPS Requests (Port 443 Traffic)"
-      query = query.vpc_flow_log_https_requests
-      type  = "line"
-      width = 6
-
-      series "Connections" {
-        color = "green"
-      }
-
-      axes {
-        x {
-          title {
-            value = "Time (Daily)"
-          }
-          labels {
-            display = "auto"
-          }
-        }
-        y {
-          title {
-            value = "Connections"
-          }
-          labels {
-            display = "auto"
-          }
-        }
-      }
+      title = "Top 10 ENIs by Traffic"
+      query = query.activity_dashboard_top_enis_by_traffic
+      type  = "table"
+      width = 12
     }
-    */
 
     chart {
-      title = "Top 10 Source IPs by Connections"
-      query = query.vpc_flow_log_top_ips_by_traffic
+      title = "Top 10 Source IPs by Traffic"
+      query = query.activity_dashboard_top_source_ips_by_traffic
+      type  = "table"
+      width = 6
+    }
+
+    chart {
+      title = "Top 10 Destination IPs by Traffic"
+      query = query.activity_dashboard_top_destination_ips_by_traffic
       type  = "table"
       width = 6
     }
 
     chart {
       title = "Top 10 Rejected Source IPs"
-      query = query.vpc_flow_log_top_ips_by_rejects
+      query = query.activity_dashboard_top_source_ips_by_rejected_traffic
       type  = "table"
       width = 6
     }
 
     chart {
       title = "Top 10 Packet Transfers Across Hosts"
-      query = query.vpc_flow_log_top_packet_transfers
+      query = query.activity_dashboard_top_source_destination_pairs_by_packets
       type  = "table"
       width = 6
     }
-
-    /*
-    chart {
-      title = "Top 10 IP Addresses Where Flow Records Were Skipped"
-      query = query.vpc_flow_log_skipped_records
-      type  = "table"
-      width = 6
-    }
-    */
-
   }
 }
 
 # Query definitions
 
-query "vpc_flow_log_total_logs" {
-  title       = "Log Count"
-  description = "Count the total VPC Flow Log entries."
+query "activity_dashboard_total_records" {
+  title       = "Record Count"
+  description = "Count the total VPC flow log records, excluding records that are skipped or have no data."
 
   sql = <<-EOQ
     select
-      count(*) as "Total Logs"
+      count(*) as "Total Records"
     from
       aws_vpc_flow_log;
   EOQ
@@ -195,15 +118,17 @@ query "vpc_flow_log_total_logs" {
   }
 }
 
-query "vpc_flow_log_total_volume_in_bytes" {
-  title       = "Total Bytes"
-  description = "Sum of all bytes transferred in VPC Flow Logs."
+query "activity_dashboard_total_accepted_traffic" {
+  title       = "Accepted Traffic Count"
+  description = "Count the total VPC flow log records with accepted traffic."
 
   sql = <<-EOQ
     select
-      sum(bytes) as "Total Bytes"
+      count(*) as "Accepted Traffic"
     from
-      aws_vpc_flow_log;
+      aws_vpc_flow_log
+    where
+      action = 'ACCEPT';
   EOQ
 
   tags = {
@@ -211,15 +136,17 @@ query "vpc_flow_log_total_volume_in_bytes" {
   }
 }
 
-query "vpc_flow_log_total_packets" {
-  title       = "Total Packets"
-  description = "Sum of all packets transferred in VPC Flow Logs."
+query "activity_dashboard_total_rejected_traffic" {
+  title       = "Rejected Traffic Count"
+  description = "Count the total VPC flow log records with rejected traffic."
 
   sql = <<-EOQ
     select
-      sum(packets) as "Total Packets"
+      count(*) as "Rejected Traffic"
     from
-      aws_vpc_flow_log;
+      aws_vpc_flow_log
+    where
+      action = 'REJECT';
   EOQ
 
   tags = {
@@ -227,9 +154,9 @@ query "vpc_flow_log_total_packets" {
   }
 }
 
-query "vpc_flow_log_accepted_vs_rejected" {
-  title       = "Accepted vs. Rejected Connections"
-  description = "Comparison of accepted and rejected connection counts."
+query "activity_dashboard_accepted_rejected_traffic" {
+  title       = "Accepted vs. Rejected Traffic"
+  description = "Comparison of accepted and rejected record counts."
 
   sql = <<-EOQ
     with time_series as (
@@ -259,25 +186,57 @@ query "vpc_flow_log_accepted_vs_rejected" {
   }
 }
 
-query "vpc_flow_log_top_ips_by_traffic" {
-  title       = "Top 10 IP Addresses by Connections"
-  description = "List the top 10 source IP addresses generating the most traffic."
+query "activity_dashboard_traffic_by_log_status" {
+  title       = "Traffic by Log Status"
+  description = "Distribution of record counts by log status."
 
   sql = <<-EOQ
     select
-      src_addr as "Source IP",
-      count(*) as "Connections",
-      sum(bytes) as "Total Bytes",
-      sum(packets) as "Total Packets",
+      log_status,
+      count(*) as "Records"
+    from
+      aws_vpc_flow_log
+    where
+      log_status is not null
+    group by
+      log_status
+    order by
+      "Records" desc,
+      log_status;
+  EOQ
+
+  tags = {
+    folder = "VPC"
+  }
+}
+
+query "activity_dashboard_top_enis_by_traffic" {
+  title       = "Top 10 ENIs by Traffic"
+  description = "List the top 10 ENIs generating the most traffic."
+
+  sql = <<-EOQ
+    select
+      interface_id as "ENI",
+      vpc_id as "VPC",
+      subnet_id as "Subnet",
+      account_id as "Account",
+      region as "Region",
+      count(*) as "Records",
+      coalesce(sum(bytes), 0) as "Total Bytes",
+      coalesce(sum(packets), 0) as "Total Packets",
       max(start_time) as "Last Seen"
     from
       aws_vpc_flow_log
     where
-      src_addr is not null
+      interface_id is not null
     group by
-      src_addr
+      interface_id,
+      vpc_id,
+      subnet_id,
+      account_id,
+      region
     order by
-      "Connections" desc
+      "Records" desc
     limit 10;
   EOQ
 
@@ -286,16 +245,71 @@ query "vpc_flow_log_top_ips_by_traffic" {
   }
 }
 
-query "vpc_flow_log_top_ips_by_rejects" {
-  title       = "Top 10 IP Addresses by Rejected Traffic"
-  description = "List the top 10 source IP addresses with the most rejected connections."
+
+query "activity_dashboard_top_source_ips_by_traffic" {
+  title       = "Top 10 Source IP Addresses by Traffic"
+  description = "List the top 10 source IP addresses generating the most traffic."
 
   sql = <<-EOQ
     select
       src_addr as "Source IP",
-      count(*) as "Connections",
-      sum(bytes) as "Total Bytes",
-      sum(packets) as "Total Packets",
+      count(*) as "Records",
+      coalesce(sum(bytes), 0) as "Total Bytes",
+      coalesce(sum(packets), 0) as "Total Packets",
+      max(start_time) as "Last Seen"
+    from
+      aws_vpc_flow_log
+    where
+      src_addr is not null
+    group by
+      src_addr
+    order by
+      "Records" desc
+    limit 10;
+  EOQ
+
+  tags = {
+    folder = "VPC"
+  }
+}
+
+query "activity_dashboard_top_destination_ips_by_traffic" {
+  title       = "Top 10 Destination IP Addresses by Traffic"
+  description = "List the top 10 destination IP addresses generating the most traffic."
+
+  sql = <<-EOQ
+    select
+      dst_addr as "Destination IP",
+      count(*) as "Records",
+      coalesce(sum(bytes), 0) as "Total Bytes",
+      coalesce(sum(packets), 0) as "Total Packets",
+      max(start_time) as "Last Seen"
+    from
+      aws_vpc_flow_log
+    where
+      dst_addr is not null
+    group by
+      dst_addr
+    order by
+      "Records" desc
+    limit 10;
+  EOQ
+
+  tags = {
+    folder = "VPC"
+  }
+}
+
+query "activity_dashboard_top_source_ips_by_rejected_traffic" {
+  title       = "Top 10 Source IP Addresses by Rejected Traffic"
+  description = "List the top 10 source IP addresses with the most rejected traffic."
+
+  sql = <<-EOQ
+    select
+      src_addr as "Source IP",
+      count(*) as "Records",
+      coalesce(sum(bytes), 0) as "Total Bytes",
+      coalesce(sum(packets), 0) as "Total Packets",
       max(start_time) as "Last Rejected"
     from
       aws_vpc_flow_log
@@ -305,7 +319,7 @@ query "vpc_flow_log_top_ips_by_rejects" {
     group by
       src_addr
     order by
-      "Connections" desc
+      "Records" desc
     limit 10;
   EOQ
 
@@ -314,17 +328,17 @@ query "vpc_flow_log_top_ips_by_rejects" {
   }
 }
 
-query "vpc_flow_log_top_packet_transfers" {
-  title       = "Top 10 Packet Transfers"
+query "activity_dashboard_top_source_destination_pairs_by_packets" {
+  title       = "Top 10 Source Destination Pairs by Packets"
   description = "List the top 10 source-destination pairs with the highest packet counts."
 
   sql = <<-EOQ
     select
       src_addr as "Source IP",
       dst_addr as "Destination IP",
-      sum(packets) as "Total Packets",
-      sum(bytes) as "Total Bytes",
-      count(*) as "Connections",
+      coalesce(sum(packets), 0) as "Total Packets",
+      coalesce(sum(bytes), 0) as "Total Bytes",
+      count(*) as "Records",
       max(start_time) as "Last Seen"
     from
       aws_vpc_flow_log
@@ -343,102 +357,9 @@ query "vpc_flow_log_top_packet_transfers" {
   }
 }
 
-query "vpc_flow_log_skipped_records" {
-  title       = "Top 10 IP Addresses Where Flow Records Were Skipped"
-  description = "List IP addresses where flow records were skipped, indicating potential capacity issues."
-
-  sql = <<-EOQ
-    select
-      src_addr as "Source IP",
-      count(*) as "Skip Count",
-      dst_addr as "Destination IP",
-      log_status as "Log Status",
-      max(start_time) as "Last Observed"
-    from
-      aws_vpc_flow_log
-    where
-      log_status = 'SKIPDATA'
-    group by
-      src_addr, dst_addr, log_status
-    order by
-      "Skip Count" desc
-    limit 10;
-  EOQ
-
-  tags = {
-    folder = "VPC"
-  }
-}
-
-query "vpc_flow_log_http_requests" {
-  title       = "HTTP Traffic"
-  description = "Count of HTTP requests (port 80)."
-
-  sql = <<-EOQ
-    with time_series as (
-      select
-        date_trunc('day', start_time) as day,
-        count(*) as request_count
-      from
-        aws_vpc_flow_log
-      where
-        dst_port = 80
-        and action = 'ACCEPT'
-      group by
-        day
-      order by
-        day
-    )
-    select
-      day,
-      request_count as "Connections"
-    from
-      time_series
-    order by
-      day;
-  EOQ
-
-  tags = {
-    folder = "VPC"
-  }
-}
-
-query "vpc_flow_log_https_requests" {
-  title       = "HTTPS Traffic"
-  description = "Count of HTTPS requests (port 443)."
-
-  sql = <<-EOQ
-    with time_series as (
-      select
-        date_trunc('day', start_time) as day,
-        count(*) as request_count
-      from
-        aws_vpc_flow_log
-      where
-        dst_port = 443
-        and action = 'ACCEPT'
-      group by
-        day
-      order by
-        day
-    )
-    select
-      day,
-      request_count as "Connections"
-    from
-      time_series
-    order by
-      day;
-  EOQ
-
-  tags = {
-    folder = "VPC"
-  }
-}
-
-query "vpc_flow_log_traffic_by_protocol" {
+query "activity_dashboard_traffic_by_protocol" {
   title       = "Traffic by Protocol"
-  description = "Distribution of connection counts across different protocols."
+  description = "Distribution of record counts across different protocols."
 
   sql = <<-EOQ
     select
@@ -447,21 +368,16 @@ query "vpc_flow_log_traffic_by_protocol" {
         when protocol = 6 then 'TCP'
         when protocol = 17 then 'UDP'
         else 'Other'
-      end as protocol,
-      count(*) as "Connections"
+      end as protocol_type,
+      count(*) as "Records"
     from
       aws_vpc_flow_log
     where
       protocol is not null
     group by
-      case
-        when protocol = 1 then 'ICMP'
-        when protocol = 6 then 'TCP'
-        when protocol = 17 then 'UDP'
-        else 'Other'
-      end
+      protocol_type
     order by
-      "Connections" desc;
+      "Records" desc;
   EOQ
 
   tags = {
@@ -469,14 +385,14 @@ query "vpc_flow_log_traffic_by_protocol" {
   }
 }
 
-query "vpc_flow_log_traffic_by_region" {
+query "activity_dashboard_traffic_by_region" {
   title       = "Traffic by Region"
-  description = "Distribution of connection counts across different AWS regions."
+  description = "Distribution of record counts across different AWS regions."
 
   sql = <<-EOQ
     select
       region,
-      count(*) as "Connections"
+      count(*) as "Records"
     from
       aws_vpc_flow_log
     where
@@ -484,75 +400,8 @@ query "vpc_flow_log_traffic_by_region" {
     group by
       region
     order by
-      "Connections" desc;
-  EOQ
-
-  tags = {
-    folder = "VPC"
-  }
-}
-
-query "vpc_flow_log_ingress_vs_egress" {
-  title       = "Ingress vs. Egress Connections"
-  description = "Comparison of ingress and egress connection counts."
-
-  sql = <<-EOQ
-    with time_series as (
-      select
-        date_trunc('day', start_time) as day,
-        count(*) filter (where flow_direction = 'ingress') as ingress,
-        count(*) filter (where flow_direction = 'egress') as egress
-      from
-        aws_vpc_flow_log
-      where
-        flow_direction is not null
-      group by
-        day
-      order by
-        day
-    )
-    select
-      day,
-      ingress,
-      egress
-    from
-      time_series
-    order by
-      day;
-  EOQ
-
-  tags = {
-    folder = "VPC"
-  }
-}
-
-query "vpc_flow_log_egress_path_analysis" {
-  title       = "Egress Traffic Path Analysis"
-  description = "Distribution of egress connections across different path types."
-
-  sql = <<-EOQ
-    select
-      case traffic_path
-        when 1 then 'Through Another Resource in Same VPC'
-        when 2 then 'Through Internet Gateway or Gateway VPC Endpoint'
-        when 3 then 'Through Virtual Private Gateway'
-        when 4 then 'Through Intra-Region VPC Peering'
-        when 5 then 'Through Inter-Region VPC Peering'
-        when 6 then 'Through Local Gateway'
-        when 7 then 'Through Gateway VPC Endpoint (Nitro)'
-        when 8 then 'Through Internet Gateway (Nitro)'
-        else 'Other/Unknown'
-      end as "Path Type",
-      count(*) as "Connections"
-    from
-      aws_vpc_flow_log
-    where
-      flow_direction = 'egress'
-      and traffic_path is not null
-    group by
-      traffic_path
-    order by
-      "Connections" desc;
+      "Records" asc,
+      region;
   EOQ
 
   tags = {
