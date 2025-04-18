@@ -1,0 +1,8 @@
+## Overview
+
+Detect large data transfers in VPC Flow Logs. High-volume data transfers that deviate from normal network traffic patterns could indicate potential data exfiltration attempts, unauthorized data transfers, or compromised cloud resources. Monitoring data transfer volumes helps identify suspicious activities such as lateral movement within your environment, the exploitation of cloud storage resources, or mass data downloads that may suggest credential compromise or insider threats.
+
+This detection monitors only accepted traffic and alerts on flows transferring more than 500MB.
+
+**References**:
+- [Security Best Practices for VPCs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-best-practices.html)
