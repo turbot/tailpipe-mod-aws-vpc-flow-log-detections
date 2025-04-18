@@ -29,7 +29,8 @@ sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
 This mod also requires AWS VPC flow logs to be collected using Tailpipe with the AWS plugin:
-- [Get started with the AWS plugin for Tailpipe →](https://tailpipe.io/plugins/turbot/aws)
+- [Get started with the AWS plugin for Tailpipe →](https://hub.tailpipe.io/plugins/turbot/aws#getting-started)
+- [Collect AWS VPC flow logs →](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#configure)
 
 Install the mod:
 
