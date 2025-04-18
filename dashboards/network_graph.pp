@@ -1,8 +1,6 @@
 category "ip_address" {
   title = "IP Address"
-  #color = "blue"
   icon  = "server"
-  # href = "/aws_vpc_flow_log_detections.dashboard.source_ip_traffic_map?input.source_ip={{.properties.'ip' | @uri}}"
 }
 
 dashboard "network_graph" {
@@ -15,9 +13,12 @@ dashboard "network_graph" {
   }
 
   graph {
-    title     = "Network Traffic Graph"
     type      = "graph"
     direction = "LR"
+
+    category "high_conn_count" {
+      color = "orange"
+    }
 
     node {
       category = category.ip_address
@@ -44,25 +45,17 @@ dashboard "network_graph" {
           select
             ip as id,
             ip as title,
-            --json_object(
-              --'IP Address', ip
-            --) as properties
           from
             all_ips
           order by
             ip
           limit 5000;
         EOQ
+
         tags = {
           folder = "Hidden"
         }
       }
-
-
-    # Define in graph so it can be used in SQL query
-    category "high_conn_count" {
-      color = "red"
-    }
 
     edge {
       sql = <<-EOQ
@@ -105,9 +98,6 @@ dashboard "network_graph" {
             when sum(connection_count) > 50 then 'high_conn_count'
           end as category,
           sum(connection_count) as title
-          --json_object(
-            --'Connections', sum(connection_count)
-          --) as properties
         from
           ip_pairs
         group by
@@ -118,6 +108,7 @@ dashboard "network_graph" {
         order by
           from_id;
       EOQ
+
       tags = {
         folder = "Hidden"
       }
