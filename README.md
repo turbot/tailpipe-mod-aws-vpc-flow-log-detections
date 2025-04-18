@@ -10,7 +10,7 @@ Run detection benchmarks:
 ![image](docs/images/aws_vpc_flow_log_mitre_dashboard.png)
 
 View insights in dashboards:
-![image](docs/images/aws_vpc_flow_log_activity_dashboard.png)
+![image](docs/images/aws_vpc_flow_log_network_graph.png)
 
 ## Documentation
 
